@@ -25,8 +25,9 @@ function shareText(run) {
 /**
  * 공유 카드 이미지(1080×1080 PNG)를 만든다.
  * 아이콘과 같은 방식: 게임의 실제 렌더 코드로 그려서 브랜드가 일치한다.
+ * (shareScore 내부용이지만 검증 스크립트에서 쓸 수 있게 export)
  */
-async function makeShareCard(run, skin) {
+export async function makeShareCard(run, skin) {
   const size = 1080;
   const canvas = document.createElement("canvas");
   canvas.width = size;
