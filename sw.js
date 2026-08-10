@@ -10,7 +10,7 @@
  * activate 단계에서 옛 캐시 창고를 비운다.
  */
 
-const CACHE_NAME = "joopjoop-v1";
+const CACHE_NAME = "joopjoop-v2"; // v2: share.js·daily.js 추가 (M5)
 
 /* 첫 방문 때 미리 담아두는 앱 셸 — 이후엔 오프라인도 완주 가능 */
 const PRECACHE_URLS = [
@@ -29,6 +29,8 @@ const PRECACHE_URLS = [
   "./js/effects.js",
   "./js/sound.js",
   "./js/ui.js",
+  "./js/share.js",
+  "./js/daily.js",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/icon-maskable-512.png",

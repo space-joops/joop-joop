@@ -28,14 +28,17 @@ const els = {
   resultNewBest: document.getElementById("result-new-best"),
   startButton: document.getElementById("start-button"),
   retryButton: document.getElementById("retry-button"),
+  shareButton: document.getElementById("share-button"),
   homeButton: document.getElementById("home-button"),
   muteButton: document.getElementById("mute-button"),
+  dailyBonus: document.getElementById("daily-bonus"),
 };
 
 /** 버튼 이벤트를 연결한다. main.js 가 시작 시 한 번 호출. */
-export function bindButtons({ onStart, onRetry, onHome, onMuteToggle }) {
+export function bindButtons({ onStart, onRetry, onShare, onHome, onMuteToggle }) {
   els.startButton.addEventListener("click", onStart);
   els.retryButton.addEventListener("click", onRetry);
+  els.shareButton.addEventListener("click", onShare);
   els.homeButton.addEventListener("click", onHome);
   els.muteButton.addEventListener("click", onMuteToggle);
 }
@@ -133,4 +136,30 @@ export function renderSkinPicker(profile, onSkinClick) {
 /** 음소거 버튼 아이콘 갱신 */
 export function updateMuteButton(muted) {
   els.muteButton.textContent = muted ? "🔇" : "🔊";
+}
+
+/** 출석 보너스 토스트를 타이틀 화면에 띄운다. (오늘 이미 받았으면 호출 안 됨) */
+export function showDailyBonus(amount, streak) {
+  els.dailyBonus.textContent =
+    streak >= 2
+      ? `🎁 출석 보너스 +${amount}💠 (연속 ${streak}일!)`
+      : `🎁 출석 보너스 +${amount}💠`;
+  els.dailyBonus.classList.remove("hidden");
+}
+
+/**
+ * 공유 결과를 버튼 라벨로 알려준다.
+ * 공유 시트가 뜨는 환경(모바일)은 시트 자체가 피드백이라 라벨을 안 바꾼다.
+ */
+export function showShareFeedback(status) {
+  const label = {
+    copied: "📋 링크를 복사했어요!",
+    failed: "😢 공유 실패",
+  }[status];
+  if (!label) return;
+
+  els.shareButton.textContent = label;
+  setTimeout(() => {
+    els.shareButton.textContent = "📡 자랑하기";
+  }, 1800);
 }

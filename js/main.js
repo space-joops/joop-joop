@@ -21,6 +21,8 @@ import {
   createEffects, spawnBurst, spawnPopup, addShake,
   updateEffects, drawEffects, shakeOffset,
 } from "./effects.js";
+import { shareScore } from "./share.js";
+import { claimDailyBonus } from "./daily.js";
 import * as sound from "./sound.js";
 import * as ui from "./ui.js";
 
@@ -105,6 +107,13 @@ function toggleMute() {
   sound.setMuted(profile.muted);
   saveProfile(profile);
   ui.updateMuteButton(profile.muted);
+}
+
+/** 결과 화면의 "자랑하기" — 성공 여부와 무관하게 게임은 계속 */
+async function onShare() {
+  sound.unlock();
+  const status = await shareScore(run, profile);
+  ui.showShareFeedback(status);
 }
 
 function onSkinClick(skinId) {
@@ -280,7 +289,9 @@ function draw() {
   ctx.save();
   ctx.translate(shake.x, shake.y);
 
-  drawWorld(ctx, layout, starfield, elapsedTotal, fever);
+  // 배경 위상은 플레이 중에만 진행된다 (메뉴에서는 항상 기본 심우주)
+  const runElapsed = screenState === "playing" ? run.elapsedSeconds : 0;
+  drawWorld(ctx, layout, starfield, elapsedTotal, fever, runElapsed);
   drawObjects(ctx, run, layout, elapsedTotal);
 
   const skin = skinById(profile.selectedSkin);
@@ -318,8 +329,17 @@ ui.updateMuteButton(profile.muted);
 ui.bindButtons({
   onStart: startRun,
   onRetry: startRun,
+  onShare: onShare,
   onHome: gotoTitle,
   onMuteToggle: toggleMute,
 });
+
+// 출석 보너스: 오늘 첫 접속이면 조각을 지급하고 타이틀에 토스트를 띄운다
+const bonus = claimDailyBonus(profile);
+if (bonus.granted) {
+  saveProfile(profile);
+  ui.showDailyBonus(bonus.amount, bonus.streak);
+}
+
 gotoTitle();
 requestAnimationFrame(frame);

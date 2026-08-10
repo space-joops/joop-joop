@@ -80,4 +80,24 @@ export const CONFIG = {
     dangerRadius: 0.038,
     starRadius: 0.03,
   },
+
+  // ── 출석 보너스 (§9-2) ──
+  daily: {
+    baseShards: 20,          // 1일차 지급량
+    streakBonus: 10,         // 연속 출석마다 추가
+    maxShards: 50,           // 상한 (4일차부터 고정)
+  },
+
+  // ── 배경 위상: 판이 길어질수록 하늘이 변한다 (§9-3) ──
+  // start(초)에 시작해 fadeSeconds 동안 서서히 나타난다.
+  // 다음 위상이 나타나면 이전 위상은 같은 속도로 물러난다.
+  backdrop: {
+    fadeSeconds: 8,
+    phases: [
+      { start: 45,           // 오로라: 시안·그린의 커튼
+        top: "rgba(45, 226, 230, 0.14)", bottom: "rgba(53, 224, 122, 0.08)" },
+      { start: 100,          // 여명: 지평선 너머 앰버 빛
+        top: "rgba(255, 178, 62, 0.12)", bottom: "rgba(255, 92, 119, 0.10)" },
+    ],
+  },
 };
