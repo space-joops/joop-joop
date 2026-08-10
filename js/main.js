@@ -94,7 +94,8 @@ function gotoTitle() {
 
 /** 첫 화면 대형 줍의 위치·크기 (그리기와 쓰다듬기 판정이 공유) */
 function titlePose() {
-  return { x: layout.width / 2, y: layout.height * 0.3, scale: 3.2 };
+  // y 0.26: 하단 패널에 노즐·화염이 가려지지 않는 높이 (플레이테스트로 조정)
+  return { x: layout.width / 2, y: layout.height * 0.26, scale: 3.0 };
 }
 
 /** 첫 화면에서 줍 근처를 탭하면 쓰다듬기 — 애착의 핵심 인터랙션 (§10-3) */
