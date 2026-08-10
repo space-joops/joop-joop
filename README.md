@@ -1,5 +1,7 @@
 # 줍줍! (Joop Joop!) 🛰️
 
+**▶ 지금 플레이하기: https://joop-joop.vercel.app**
+
 > **space-joops 유니버스**의 궤도 청소 아케이드 게임.
 > 원작 [joop-03 (줍스)](https://github.com/space-joops/joop-03)의 세계관을 잇는 파생작입니다.
 
@@ -44,4 +46,4 @@ python3 -m http.server 8000
 ## 인프라
 
 - **GitHub**: [space-joops/joop-joop](https://github.com/space-joops/joop-joop) (public)
-- **Vercel**: 배포 후 URL 갱신 예정
+- **Vercel**: `ppabams-projects/joop-joop` → https://joop-joop.vercel.app (수동 배포: `vercel deploy --prod`)
