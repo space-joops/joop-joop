@@ -32,6 +32,12 @@ const els = {
   homeButton: document.getElementById("home-button"),
   muteButton: document.getElementById("mute-button"),
   dailyBonus: document.getElementById("daily-bonus"),
+  speechBubble: document.getElementById("speech-bubble"),
+  joopName: document.getElementById("joop-name"),
+  bondChip: document.getElementById("bond-chip"),
+  nameEdit: document.getElementById("name-edit"),
+  nameInput: document.getElementById("name-input"),
+  resultTitle: document.querySelector(".result-title"),
 };
 
 /** 버튼 이벤트를 연결한다. main.js 가 시작 시 한 번 호출. */
@@ -50,10 +56,45 @@ export function showScreen(name) {
   els.result.classList.toggle("hidden", name !== "gameover");
 }
 
-/** 타이틀 화면의 최고기록 줄 갱신 */
-export function updateTitle(profile) {
+/** 타이틀 화면의 이름·유대·최고기록 줄 갱신 */
+export function updateTitle(profile, bondTierLabel) {
+  els.joopName.textContent = profile.joopName;
+  els.bondChip.textContent = bondTierLabel;
   els.titleBest.textContent =
     profile.best > 0 ? `최고기록 ${profile.best.toLocaleString()} · 💠 ${profile.shards}` : "";
+}
+
+/** 줍의 말풍선에 대사를 띄운다. 같은 대사여도 팝 애니메이션을 다시 돈다. */
+export function showSpeech(text) {
+  els.speechBubble.textContent = text;
+  els.speechBubble.classList.remove("hidden");
+  // 애니메이션 재시작 트릭: 클래스를 뗐다 붙이면 안 되고, reflow 를 강제한다
+  els.speechBubble.style.animation = "none";
+  void els.speechBubble.offsetWidth;
+  els.speechBubble.style.animation = "";
+}
+
+/**
+ * 이름 편집 배선: ✏️ → 입력창으로 전환, Enter/포커스 이탈로 확정.
+ * 검증(길이·공백)은 main.js 의 onRename 책임 — UI는 입력만 받는다.
+ */
+export function bindNameEdit(onRename) {
+  const startEditing = () => {
+    els.nameInput.value = els.joopName.textContent;
+    els.nameInput.classList.remove("hidden");
+    els.nameInput.focus();
+    els.nameInput.select();
+  };
+  const finishEditing = () => {
+    els.nameInput.classList.add("hidden");
+    onRename(els.nameInput.value);
+  };
+  els.nameEdit.addEventListener("click", startEditing);
+  els.nameInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") els.nameInput.blur(); // blur 가 finishEditing 을 부른다
+    event.stopPropagation(); // 스페이스 입력이 게임 시작으로 새지 않게
+  });
+  els.nameInput.addEventListener("blur", finishEditing);
 }
 
 /** 플레이 중 매 프레임 호출되는 HUD 갱신 */
@@ -76,6 +117,7 @@ export function updateHud(run, feverActive) {
 
 /** 게임 오버 결과 화면 채우기 */
 export function showResult(run, profile) {
+  els.resultTitle.textContent = `${profile.joopName}의 임무 종료`; // 이름 = 애착 (§10-1)
   els.resultScore.textContent = run.score.toLocaleString();
   els.resultNewBest.classList.toggle("hidden", !run.isNewBest);
   els.resultDetail.innerHTML = [

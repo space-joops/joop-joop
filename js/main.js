@@ -23,6 +23,7 @@ import {
 } from "./effects.js";
 import { shareScore } from "./share.js";
 import { claimDailyBonus } from "./daily.js";
+import { bondPoints, bondTier, greeting, petReaction, renameReaction } from "./bond.js";
 import * as sound from "./sound.js";
 import * as ui from "./ui.js";
 
@@ -34,6 +35,7 @@ const ctx = canvas.getContext("2d");
 let screenState = "title";      // title | playing | gameover
 const profile = loadProfile();  // 영구 저장 데이터 (조각·스킨·최고기록)
 let joop = new Joop();
+const titleJoop = new Joop();   // 첫 화면의 대형 인사 줍 (쓰다듬기 대상)
 let run = createRunState();     // 타이틀에서도 빈 run 을 둬서 draw 가 분기 없이 돈다
 let effects = createEffects();
 let layout = null;
@@ -67,6 +69,7 @@ function startRun() {
 function endRun() {
   // 이번 판의 조각을 지갑에 합산하고 최고기록을 갱신한다
   profile.shards += run.shardsEarned;
+  profile.totalDebris += run.debrisCollected; // 유대 점수의 몸통 (§10-2)
   run.isNewBest = run.score > profile.best;
   if (run.isNewBest) profile.best = run.score;
   saveProfile(profile);
@@ -82,9 +85,39 @@ function gotoTitle() {
   screenState = "title";
   run = createRunState();
   joop = new Joop();
-  ui.updateTitle(profile);
+  const tier = bondTier(bondPoints(profile));
+  ui.updateTitle(profile, tier.label);
   ui.renderSkinPicker(profile, onSkinClick);
+  ui.showSpeech(greeting(tier, profile.joopName !== "줍이"));
   ui.showScreen("title");
+}
+
+/** 첫 화면 대형 줍의 위치·크기 (그리기와 쓰다듬기 판정이 공유) */
+function titlePose() {
+  return { x: layout.width / 2, y: layout.height * 0.3, scale: 3.2 };
+}
+
+/** 첫 화면에서 줍 근처를 탭하면 쓰다듬기 — 애착의 핵심 인터랙션 (§10-3) */
+function tryPet(event) {
+  const rect = stage.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const pose = titlePose();
+  const reach = CONFIG.joop.radius * layout.unit * pose.scale * 2; // 판정은 넉넉하게
+  if (Math.hypot(x - pose.x, y - pose.y) > reach) return;
+
+  titleJoop.setMood("happy", 0.8);
+  titleJoop.squash = 0.5; // 기분 좋은 바운스
+  profile.pets += 1;
+  saveProfile(profile);
+
+  spawnPopup(effects, pose.x + (Math.random() * 60 - 30), pose.y - reach * 0.55, "💗", "#ff5c77");
+  spawnBurst(effects, x, y, "#ff5c77", 8, 180);
+  sound.playPet();
+
+  const tier = bondTier(bondPoints(profile));
+  ui.showSpeech(petReaction(tier));
+  ui.updateTitle(profile, tier.label); // 쓰다듬다 단계가 오르면 칩도 바로 갱신
 }
 
 /* ── 입력 ── */
@@ -133,9 +166,14 @@ function onSkinClick(skinId) {
 }
 
 stage.addEventListener("pointerdown", (event) => {
-  // 버튼·스킨 칩 클릭은 각자의 핸들러가 처리한다 — 게임 탭으로 오인하지 않기
-  if (event.target.closest("button")) return;
-  primaryAction();
+  // 버튼·스킨 칩·입력창은 각자의 핸들러가 처리한다 — 게임 탭으로 오인하지 않기
+  if (event.target.closest("button, input")) return;
+  if (screenState === "title") {
+    sound.unlock();
+    tryPet(event); // 타이틀에서 탭 = 쓰다듬기 (시작은 발사 버튼/스페이스)
+  } else {
+    primaryAction();
+  }
 });
 
 window.addEventListener("keydown", (event) => {
@@ -152,9 +190,25 @@ window.addEventListener("resize", resize);
 
 /* ── 게임 로직 업데이트 ── */
 
+/** 이름 편집 확정: 검증 후 저장. 빈 이름·같은 이름은 조용히 무시 (§10-1) */
+function onRename(rawName) {
+  const name = rawName.trim().slice(0, 12);
+  const tier = bondTier(bondPoints(profile));
+  if (!name || name === profile.joopName) {
+    ui.updateTitle(profile, tier.label); // 입력창을 닫으며 원래 표시로 복구
+    return;
+  }
+  profile.joopName = name;
+  saveProfile(profile);
+  ui.updateTitle(profile, tier.label);
+  ui.showSpeech(renameReaction(name));
+  sound.playPet();
+}
+
 function update(dt) {
   elapsedTotal += dt;
   joop.update(dt);
+  if (screenState === "title") titleJoop.update(dt);
   updateEffects(effects, dt);
 
   if (screenState !== "playing") return;
@@ -295,7 +349,12 @@ function draw() {
   drawObjects(ctx, run, layout, elapsedTotal);
 
   const skin = skinById(profile.selectedSkin);
-  joop.draw(ctx, layout, skin, elapsedTotal, fever, run.invincibleTimer > 0);
+  if (screenState === "title") {
+    // 타이틀의 주인공: 큰 줍이 화면 상단에서 플레이어를 맞이한다
+    titleJoop.draw(ctx, layout, skin, elapsedTotal, false, false, titlePose());
+  } else {
+    joop.draw(ctx, layout, skin, elapsedTotal, fever, run.invincibleTimer > 0);
+  }
 
   drawEffects(ctx, effects, layout.unit);
   ctx.restore();
@@ -333,6 +392,7 @@ ui.bindButtons({
   onHome: gotoTitle,
   onMuteToggle: toggleMute,
 });
+ui.bindNameEdit(onRename);
 
 // 출석 보너스: 오늘 첫 접속이면 조각을 지급하고 타이틀에 토스트를 띄운다
 const bonus = claimDailyBonus(profile);

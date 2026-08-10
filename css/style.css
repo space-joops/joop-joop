@@ -161,6 +161,14 @@ html, body {
   padding: 20px;
 }
 
+/* 타이틀은 캐릭터가 주인공 — 패널을 하단으로 내려 상단을 줍에게 내준다 */
+#title-screen {
+  align-items: flex-end;
+  padding-bottom: max(18px, env(safe-area-inset-bottom));
+}
+.title-panel { padding: 18px 20px 16px; }
+.title-panel .game-title { font-size: 34px; }
+
 .crt-panel {
   width: 100%;
   max-width: 340px;
@@ -200,6 +208,78 @@ html, body {
 .best-line { margin: 8px 0 2px; font-size: 14px; color: var(--amber); min-height: 1.2em; }
 
 .howto { margin-top: 12px; font-size: 12px; opacity: 0.65; line-height: 1.6; }
+
+/* ── 말풍선: 줍이 건네는 인사 (CRT 패널 축소판 + 꼬리) ── */
+.speech-bubble {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 78%;
+  padding: 10px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--text);
+  background: var(--panel);
+  border: 2px solid var(--phosphor-dim);
+  border-radius: 14px;
+  box-shadow: 0 0 14px rgba(53, 224, 122, 0.2);
+  animation: bonus-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.speech-bubble::after { /* 줍을 향한 꼬리 */
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--phosphor-dim);
+}
+
+/* ── 이름 줄: 이름(그린 = 원작의 "이름은 그린" 위계) + 유대 칩 + 연필 ── */
+.name-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+#joop-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--phosphor);
+  text-shadow: 0 0 8px rgba(53, 224, 122, 0.5);
+}
+.bond-chip {
+  font-size: 10px;
+  padding: 3px 8px;
+  border: 1px solid var(--phosphor-dim);
+  border-radius: 999px;
+  color: var(--amber); /* 유대 = 지표·수치 → 앰버 (투톤 위계) */
+}
+.name-edit {
+  font-size: 13px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+}
+.name-input {
+  display: block;
+  margin: 6px auto 0;
+  width: 70%;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 15px;
+  text-align: center;
+  color: var(--phosphor);
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--phosphor);
+  border-radius: 10px;
+  outline: none;
+}
 
 /* 출석 보너스 토스트 — 앰버(수치·보상의 색) 계기판 칩 */
 .daily-bonus {

@@ -42,18 +42,24 @@
       <div id="hud-shards">💠 <span id="hud-shard-count">0</span></div>
     </div>
 
-    <!-- 타이틀 화면 -->
+    <!-- 타이틀 화면: 상단은 캔버스의 대형 줍이 맞이하고(쓰다듬기 가능),
+         패널은 하단에 컴팩트하게. "메뉴"가 아니라 "내 줍을 만나는 곳". -->
     <section id="title-screen">
-      <div class="crt-panel">
+      <div id="speech-bubble" class="speech-bubble hidden"><!-- 인사말·반응 대사 --></div>
+      <div class="crt-panel title-panel">
         <h1 class="game-title">줍줍!</h1>
-        <p class="game-subtitle">JOOP JOOP! · 궤도 청소 아케이드</p>
-        <p class="lore">케슬러 신드롬으로 뒤덮인 지구 저궤도.<br />
-          오늘도 줍은 우주 쓰레기를 주우러 갑니다.</p>
+        <div class="name-row">
+          <span id="joop-name">줍이</span>
+          <span id="bond-chip" class="bond-chip"></span>
+          <button id="name-edit" class="name-edit" aria-label="이름 바꾸기">✏️</button>
+        </div>
+        <input id="name-input" class="name-input hidden" maxlength="12"
+               placeholder="이름 (1~12자)" autocomplete="off" />
         <div id="daily-bonus" class="daily-bonus hidden"><!-- 출석 보너스 토스트 --></div>
         <div id="skin-picker" class="skin-picker"><!-- js/ui.js 가 채운다 --></div>
         <p id="title-best" class="best-line"></p>
         <button id="start-button" class="chunky-button">▶ 발사!</button>
-        <p class="howto">탭/스페이스 = 궤도 전환 · 🗑️ 줍기 · ⚠️ 피하기</p>
+        <p class="howto">탭/스페이스 = 궤도 전환 · 🗑️ 줍기 · ⚠️ 피하기 · 줍을 쓰다듬어 보세요!</p>
       </div>
     </section>
 
