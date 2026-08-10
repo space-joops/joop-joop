@@ -7,13 +7,13 @@
 */
 
 :root {
-  --bg-deep: #070b07;        /* 우주 배경 (거의 검정, 살짝 초록) */
-  --phosphor: #4ade80;       /* 형광 그린 — 주 강조색 */
-  --phosphor-dim: #1e5c34;   /* 형광 그린 어두운 톤 (베젤·비활성) */
-  --amber: #fbbf24;          /* 앰버 — 보조 강조색 (점수·경고) */
-  --danger: #f87171;         /* 위험 표시 */
-  --panel: rgba(10, 20, 12, 0.92);  /* 관제 패널 배경 */
-  --text: #d9fbe4;           /* 본문 텍스트 (연한 그린 화이트) */
+  --bg-deep: #030a05;        /* 우주 배경 (거의 검정, 살짝 초록) */
+  --phosphor: #35e07a;       /* 형광 그린 — 주 강조색 */
+  --phosphor-dim: #1e5a46;   /* 형광 그린 어두운 톤 (베젤·비활성) */
+  --amber: #ffb23e;          /* 앰버 — 보조 강조색 (점수·경고) */
+  --danger: #ff5c77;         /* 위험 표시 */
+  --panel: rgba(10, 28, 16, 0.92);  /* 관제 패널 배경 */
+  --text: #e4f2e9;           /* 본문 텍스트 (연한 그린 화이트) */
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -87,7 +87,7 @@ html, body {
   font-weight: bold;
   letter-spacing: 3px;
   color: var(--amber);
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.55);
+  text-shadow: 0 0 8px rgba(255, 178, 62, 0.55);
   font-variant-numeric: tabular-nums;
 }
 .seg-display.big { font-size: 56px; margin: 10px 0; }
@@ -96,14 +96,14 @@ html, body {
   font-size: 20px;
   color: var(--danger);
   letter-spacing: 4px;
-  text-shadow: 0 0 6px rgba(248, 113, 113, 0.6);
+  text-shadow: 0 0 6px rgba(255, 92, 119, 0.6);
 }
 
 #hud-combo {
   margin-top: 6px;
   font-size: 18px;
   color: var(--phosphor);
-  text-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
+  text-shadow: 0 0 8px rgba(53, 224, 122, 0.7);
   animation: combo-pop 0.18s ease-out;
 }
 #hud-combo-mult { color: var(--amber); margin-left: 6px; }
@@ -168,7 +168,7 @@ html, body {
   border-radius: 14px;
   box-shadow:
     0 0 0 3px rgba(0, 0, 0, 0.6),
-    0 0 24px rgba(74, 222, 128, 0.18),
+    0 0 24px rgba(53, 224, 122, 0.18),
     inset 0 0 40px rgba(0, 0, 0, 0.5);
   padding: 26px 22px;
   text-align: center;
@@ -177,7 +177,7 @@ html, body {
 .game-title {
   font-size: 52px;
   color: var(--phosphor);
-  text-shadow: 0 0 14px rgba(74, 222, 128, 0.8), 0 0 40px rgba(74, 222, 128, 0.4);
+  text-shadow: 0 0 14px rgba(53, 224, 122, 0.8), 0 0 40px rgba(53, 224, 122, 0.4);
   letter-spacing: 2px;
 }
 
@@ -224,7 +224,7 @@ html, body {
 .skin-chip canvas { display: block; margin: 0 auto 2px; }
 .skin-chip.selected {
   border-color: var(--phosphor);
-  box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  box-shadow: 0 0 10px rgba(53, 224, 122, 0.5);
 }
 .skin-chip.locked { opacity: 0.55; }
 .skin-chip .price { color: var(--amber); }
@@ -237,18 +237,18 @@ html, body {
   font-family: inherit;
   font-size: 20px;
   font-weight: bold;
-  color: #06130a;
+  color: #030a05;
   background: var(--phosphor);
   border: 0;
   border-radius: 12px;
   /* 아래 그림자로 "눌리는" 물리 버튼 두께를 표현 */
-  box-shadow: 0 5px 0 #15803d, 0 0 18px rgba(74, 222, 128, 0.45);
+  box-shadow: 0 5px 0 #176b42, 0 0 18px rgba(53, 224, 122, 0.45);
   cursor: pointer;
   transition: transform 0.06s, box-shadow 0.06s;
 }
 .chunky-button:active {
   transform: translateY(4px);
-  box-shadow: 0 1px 0 #15803d;
+  box-shadow: 0 1px 0 #176b42;
 }
 
 .ghost-button {

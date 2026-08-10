@@ -52,7 +52,7 @@ export function createStarfield(width, height) {
     const y = Math.random() * height;
     const size = Math.random() * 1.6 + 0.4;
     const alpha = Math.random() * 0.6 + 0.25;
-    ctx.fillStyle = `rgba(217, 251, 228, ${alpha})`; // 연한 그린 화이트 (CSS --text 와 동일 계열)
+    ctx.fillStyle = `rgba(228, 242, 233, ${alpha})`; // 연한 그린 화이트 (CSS --text 와 동일 계열)
     ctx.fillRect(x, y, size, size);
   }
   return canvas;
@@ -71,10 +71,10 @@ export function drawWorld(ctx, layout, starfield, time, fever) {
   if (fever) {
     const grad = ctx.createLinearGradient(0, 0, 0, height);
     grad.addColorStop(0, "#150a1e");
-    grad.addColorStop(1, "#070b07");
+    grad.addColorStop(1, "#030a05");
     ctx.fillStyle = grad;
   } else {
-    ctx.fillStyle = "#070b07";
+    ctx.fillStyle = "#030a05";
   }
   ctx.fillRect(0, 0, width, height);
   ctx.drawImage(starfield, 0, 0);
@@ -85,45 +85,59 @@ export function drawWorld(ctx, layout, starfield, time, fever) {
     ctx.setLineDash([6, 10]);
     ctx.lineDashOffset = -time * 40; // 점선이 흐르며 "세계가 도는" 느낌을 준다
     ctx.arc(layout.earthX, layout.earthY, radius, 0, Math.PI * 2);
-    ctx.strokeStyle = fever ? "rgba(240, 171, 252, 0.35)" : "rgba(74, 222, 128, 0.28)";
+    ctx.strokeStyle = fever ? "rgba(240, 171, 252, 0.35)" : "rgba(53, 224, 122, 0.28)";
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.setLineDash([]);
   }
 
-  // 3) 지구 — 화면 아래에 걸친 커다란 원. 디테일은 대륙 몇 덩어리로 충분
+  // 3) 지구 — 원작 브랜드 심볼을 따른 "경위도 그리드 관제 화면 지구"
+  //    (파란 바다 지구가 아니라, CRT 콘솔에 표시된 지구. 아트디자인 §5)
   const { earthX, earthY, earthR } = layout;
 
-  // 대기광(글로우): 지구 테두리의 옅은 빛
+  // 대기광: 지구 림의 형광 그린 빛
   const glow = ctx.createRadialGradient(earthX, earthY, earthR * 0.92, earthX, earthY, earthR * 1.12);
-  glow.addColorStop(0, "rgba(96, 165, 250, 0)");
-  glow.addColorStop(0.7, "rgba(96, 165, 250, 0.25)");
-  glow.addColorStop(1, "rgba(96, 165, 250, 0)");
+  glow.addColorStop(0, "rgba(53, 224, 122, 0)");
+  glow.addColorStop(0.75, "rgba(53, 224, 122, 0.22)");
+  glow.addColorStop(1, "rgba(53, 224, 122, 0)");
   ctx.fillStyle = glow;
   ctx.beginPath();
   ctx.arc(earthX, earthY, earthR * 1.12, 0, Math.PI * 2);
   ctx.fill();
 
-  // 바다
+  // 본체: surface 색 원판 + 그린 윤곽선
   ctx.beginPath();
   ctx.arc(earthX, earthY, earthR, 0, Math.PI * 2);
-  ctx.fillStyle = "#1e3a5f";
+  ctx.fillStyle = "#0a1c10";
   ctx.fill();
+  ctx.strokeStyle = "rgba(53, 224, 122, 0.6)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
-  // 대륙 — 지구가 천천히 자전하는 것처럼 각도를 시간에 따라 민다
-  const spin = time * 0.05;
+  // 경위도 그리드 — 그리드 색 #1e5a46 (원작 --color-grid).
+  // 경도선은 자전(spin)에 따라 흐르고, 위도선은 고정된 동심 타원.
+  const spin = time * 0.15;
   ctx.save();
   ctx.beginPath();
   ctx.arc(earthX, earthY, earthR, 0, Math.PI * 2);
-  ctx.clip(); // 대륙이 지구 원 밖으로 새지 않게
-  ctx.fillStyle = "#2f6b4f";
-  for (let i = 0; i < 5; i++) {
-    const a = spin + (i * Math.PI * 2) / 5;
-    const cx = earthX + Math.cos(a) * earthR * 0.55;
-    const cy = earthY + Math.sin(a) * earthR * 0.55;
+  ctx.clip(); // 그리드가 지구 원 밖으로 새지 않게
+  ctx.strokeStyle = "#1e5a46";
+  ctx.lineWidth = 1.5;
+
+  // 위도선: 지구 중심을 지나는 납작한 타원 4개
+  for (let i = 1; i <= 4; i++) {
     ctx.beginPath();
-    ctx.ellipse(cx, cy, earthR * 0.28, earthR * 0.18, a, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.ellipse(earthX, earthY, earthR, earthR * (i / 5), 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  // 경도선: 세로로 긴 타원. 자전에 따라 폭이 늘었다 줄며 "구가 도는" 착시를 만든다
+  for (let i = 0; i < 6; i++) {
+    const phase = spin + (i * Math.PI) / 6;
+    const rx = Math.abs(Math.cos(phase)) * earthR;
+    if (rx < 4) continue; // 정측면을 지나는 순간은 선이 사라진다
+    ctx.beginPath();
+    ctx.ellipse(earthX, earthY, rx, earthR, 0, 0, Math.PI * 2);
+    ctx.stroke();
   }
   ctx.restore();
 }
