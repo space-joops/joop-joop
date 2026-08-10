@@ -113,3 +113,13 @@ export function playUnlock() {
 export function playStart() {
   tone("square", 440, 880, 0.12, 0.14);
 }
+
+/**
+ * 쓰다듬기: 원작 큐브샛 사출 시그니처 "삐링~" 오마주.
+ * C6 → F6 → C7 삼각파 아르페지오 (원작과 같은 음정 1046.5/1396.9/2093Hz).
+ */
+export function playPet() {
+  tone("triangle", 1046.5, 1046.5, 0.1, 0.13);
+  tone("triangle", 1396.9, 1396.9, 0.1, 0.13, 0.09);
+  tone("triangle", 2093, 2093, 0.28, 0.12, 0.18);
+}

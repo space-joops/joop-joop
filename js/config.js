@@ -81,6 +81,11 @@ export const CONFIG = {
     starRadius: 0.03,
   },
 
+  // ── 유대 (§10-2) ──
+  bond: {
+    petPoints: 5,            // 쓰다듬기 1회의 유대 점수 (누적 수거 1개 = 1점)
+  },
+
   // ── 출석 보너스 (§9-2) ──
   daily: {
     baseShards: 20,          // 1일차 지급량

@@ -38,6 +38,9 @@ export function loadProfile() {
     muted: read("muted", false),
     lastBonusDate: read("lastBonusDate", ""),        // 출석 보너스: 마지막 지급일 "YYYY-MM-DD"
     bonusStreak: read("bonusStreak", 0),             // 연속 출석 일수
+    joopName: read("joopName", "줍이"),              // 내 줍의 이름 (§10-1)
+    totalDebris: read("totalDebris", 0),             // 누적 수거량 — 유대 점수의 몸통
+    pets: read("pets", 0),                           // 쓰다듬은 횟수
   };
 }
 
@@ -50,4 +53,7 @@ export function saveProfile(profile) {
   write("muted", profile.muted);
   write("lastBonusDate", profile.lastBonusDate);
   write("bonusStreak", profile.bonusStreak);
+  write("joopName", profile.joopName);
+  write("totalDebris", profile.totalDebris);
+  write("pets", profile.pets);
 }

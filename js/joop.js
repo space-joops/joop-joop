@@ -101,10 +101,13 @@ export class Joop {
    * @param {object} skin  SKINS 항목 ({accent, screen})
    * @param {boolean} fever  피버 중이면 별눈 + 큰 화염
    * @param {boolean} invincible  무적 중이면 깜빡임(반투명 토글)
+   * @param {?{x, y, scale}} pose  지정하면 궤도 대신 이 위치·크기로 그린다
+   *                               (첫 화면의 대형 인사 줍이 사용)
    */
-  draw(ctx, layout, skin, time, fever, invincible) {
-    const { x, y } = this.screenPosition(layout);
-    const r = CONFIG.joop.radius * layout.unit; // 기준 반지름
+  draw(ctx, layout, skin, time, fever, invincible, pose = null) {
+    const r = CONFIG.joop.radius * layout.unit * (pose?.scale ?? 1); // 기준 반지름
+    let { x, y } = pose ?? this.screenPosition(layout);
+    if (pose) y += Math.sin(this.hoverPhase) * r * 0.1; // 포즈 지정 시에도 둥실둥실
 
     ctx.save();
     ctx.translate(x, y);
