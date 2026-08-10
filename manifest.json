@@ -1,0 +1,32 @@
+{
+  "name": "줍줍! — 궤도 청소 아케이드",
+  "short_name": "줍줍!",
+  "description": "반려 청소 로봇 줍과 함께 탭 한 번으로 궤도를 넘나들며 우주 쓰레기를 줍는 원터치 아케이드 게임",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#030a05",
+  "theme_color": "#030a05",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

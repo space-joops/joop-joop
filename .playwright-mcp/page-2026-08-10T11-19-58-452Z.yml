@@ -1,0 +1,26 @@
+- main [ref=e2]:
+  - generic [ref=e5]:
+    - heading "줍줍!" [level=1] [ref=e6]
+    - paragraph [ref=e7]: JOOP JOOP! · 궤도 청소 아케이드
+    - paragraph [ref=e8]: 케슬러 신드롬으로 뒤덮인 지구 저궤도. 오늘도 줍은 우주 쓰레기를 주우러 갑니다.
+    - generic [ref=e9]:
+      - button "주비" [ref=e10] [cursor=pointer]
+      - button "앰버 💠100" [ref=e13] [cursor=pointer]:
+        - generic [ref=e15]: 앰버
+        - generic [ref=e16]: 💠100
+      - button "시아 💠250" [ref=e17] [cursor=pointer]:
+        - generic [ref=e19]: 시아
+        - generic [ref=e20]: 💠250
+      - button "마젠 💠450" [ref=e21] [cursor=pointer]:
+        - generic [ref=e23]: 마젠
+        - generic [ref=e24]: 💠450
+      - button "라임 💠700" [ref=e25] [cursor=pointer]:
+        - generic [ref=e27]: 라임
+        - generic [ref=e28]: 💠700
+      - button "골디 💠1000" [ref=e29] [cursor=pointer]:
+        - generic [ref=e31]: 골디
+        - generic [ref=e32]: 💠1000
+    - paragraph [ref=e33]: 최고기록 315 · 💠 70
+    - button "▶ 발사!" [ref=e34] [cursor=pointer]
+    - paragraph [ref=e35]: 탭/스페이스 = 궤도 전환 · 🗑️ 줍기 · ⚠️ 피하기
+  - button "소리 켜기/끄기" [ref=e36] [cursor=pointer]: 🔊

@@ -306,6 +306,12 @@ function frame(timestamp) {
 
 /* ── 부팅 ── */
 
+// PWA: 서비스 워커 등록 — 오프라인 플레이와 홈 화면 설치의 기반.
+// 실패해도 게임은 그대로 돌아가야 하므로 조용히 무시한다 (예: file:// 로 열었을 때)
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
 resize();
 sound.setMuted(profile.muted);
 ui.updateMuteButton(profile.muted);
