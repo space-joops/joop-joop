@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0a0f0a" />
+  <title>줍줍! — 궤도 청소 아케이드</title>
+  <meta name="description" content="반려 청소 로봇 줍과 함께 탭 한 번으로 궤도를 넘나들며 우주 쓰레기를 줍는 원터치 아케이드 게임" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!--
+    화면 구조 (아래로 갈수록 위 레이어):
+      1. #game-canvas   — 게임 세계 전체 (Canvas 2D)
+      2. #hud           — 플레이 중 점수/콤보/피버/생명 (DOM)
+      3. #title-screen  — 타이틀 + 스킨 선택
+      4. #result-screen — 게임 오버 결과
+    화면 전환은 js/ui.js 가 hidden 클래스로 관리한다.
+  -->
+  <main id="stage">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- 플레이 중 HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-top">
+        <div id="hud-score" class="seg-display">0</div>
+        <div id="hud-lives">♥♥♥</div>
+      </div>
+      <div id="hud-combo" class="hidden">
+        <span id="hud-combo-count">0</span> COMBO
+        <span id="hud-combo-mult">x1.0</span>
+      </div>
+      <div id="fever-bar"><div id="fever-fill"></div></div>
+      <div id="hud-shards">💠 <span id="hud-shard-count">0</span></div>
+    </div>
+
+    <!-- 타이틀 화면 -->
+    <section id="title-screen">
+      <div class="crt-panel">
+        <h1 class="game-title">줍줍!</h1>
+        <p class="game-subtitle">JOOP JOOP! · 궤도 청소 아케이드</p>
+        <p class="lore">케슬러 신드롬으로 뒤덮인 지구 저궤도.<br />
+          오늘도 줍은 우주 쓰레기를 주우러 갑니다.</p>
+        <div id="skin-picker" class="skin-picker"><!-- js/ui.js 가 채운다 --></div>
+        <p id="title-best" class="best-line"></p>
+        <button id="start-button" class="chunky-button">▶ 발사!</button>
+        <p class="howto">탭/스페이스 = 궤도 전환 · 🗑️ 줍기 · ⚠️ 피하기</p>
+      </div>
+    </section>
+
+    <!-- 게임 오버 화면 -->
+    <section id="result-screen" class="hidden">
+      <div class="crt-panel">
+        <h2 class="result-title">임무 종료</h2>
+        <p id="result-new-best" class="new-best hidden">★ 신기록! ★</p>
+        <div id="result-score" class="seg-display big">0</div>
+        <p id="result-detail" class="result-detail"></p>
+        <button id="retry-button" class="chunky-button">↻ 한 판 더!</button>
+        <button id="home-button" class="ghost-button">기지로 돌아가기</button>
+      </div>
+    </section>
+
+    <!-- 상시 표시: 음소거 -->
+    <button id="mute-button" class="corner-button" aria-label="소리 켜기/끄기">🔊</button>
+
+    <!-- CRT 스캔라인 오버레이 (장식) -->
+    <div id="scanlines" aria-hidden="true"></div>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

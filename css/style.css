@@ -1,0 +1,290 @@
+/*
+  줍줍! UI 스타일 — 카세트퓨처리즘 (원작 joop-03 디자인 방향 계승)
+
+  컨셉: 1970~80년대가 상상한 미래. 형광 그린/앰버 모노크롬,
+  CRT 스캔라인, 두꺼운 베젤의 물리 버튼, 관제 콘솔 느낌.
+  색 토큰은 :root 변수 한 곳에서만 관리한다 (docs/04-아트디자인.md 참고).
+*/
+
+:root {
+  --bg-deep: #070b07;        /* 우주 배경 (거의 검정, 살짝 초록) */
+  --phosphor: #4ade80;       /* 형광 그린 — 주 강조색 */
+  --phosphor-dim: #1e5c34;   /* 형광 그린 어두운 톤 (베젤·비활성) */
+  --amber: #fbbf24;          /* 앰버 — 보조 강조색 (점수·경고) */
+  --danger: #f87171;         /* 위험 표시 */
+  --panel: rgba(10, 20, 12, 0.92);  /* 관제 패널 배경 */
+  --text: #d9fbe4;           /* 본문 텍스트 (연한 그린 화이트) */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: "DungGeunMo", "Galmuri11", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color: var(--text);
+  /* 모바일에서 더블탭 줌·스크롤 등 브라우저 제스처가 게임 탭을 뺏지 않도록 */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── 무대: 모바일 세로 비율 프레임. 데스크톱에서는 가운데 정렬 ── */
+#stage {
+  position: relative;
+  height: 100dvh;
+  max-width: calc(100dvh * 9 / 16); /* 세로 9:16 비율 유지 */
+  min-width: min(100vw, 420px);
+  margin: 0 auto;
+  background: var(--bg-deep);
+  overflow: hidden;
+}
+
+#game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hidden { display: none !important; }
+
+/* ── CRT 스캔라인 오버레이 ── */
+#scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px, transparent 2px,
+    rgba(0, 0, 0, 0.18) 3px, rgba(0, 0, 0, 0.18) 4px
+  );
+  mix-blend-mode: multiply;
+  z-index: 50;
+}
+
+/* ── HUD ── */
+#hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* 탭이 게임 입력으로 통과되어야 한다 */
+  z-index: 10;
+  padding: max(12px, env(safe-area-inset-top)) 16px 12px;
+}
+
+.hud-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+/* 세븐세그먼트 계기판 느낌의 점수 표시 */
+.seg-display {
+  font-size: 34px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  color: var(--amber);
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.seg-display.big { font-size: 56px; margin: 10px 0; }
+
+#hud-lives {
+  font-size: 20px;
+  color: var(--danger);
+  letter-spacing: 4px;
+  text-shadow: 0 0 6px rgba(248, 113, 113, 0.6);
+}
+
+#hud-combo {
+  margin-top: 6px;
+  font-size: 18px;
+  color: var(--phosphor);
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.7);
+  animation: combo-pop 0.18s ease-out;
+}
+#hud-combo-mult { color: var(--amber); margin-left: 6px; }
+
+@keyframes combo-pop {
+  from { transform: scale(1.35); }
+  to   { transform: scale(1); }
+}
+
+/* 피버 게이지 — 계기판 바 */
+#fever-bar {
+  position: absolute;
+  left: 16px; right: 16px;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  height: 10px;
+  border: 2px solid var(--phosphor-dim);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+#fever-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--phosphor), var(--amber));
+  box-shadow: 0 0 10px var(--phosphor);
+  transition: width 0.12s linear;
+}
+#fever-bar.fever-active #fever-fill {
+  background: linear-gradient(90deg, #f0abfc, var(--amber), var(--phosphor));
+  animation: fever-shimmer 0.4s linear infinite;
+}
+@keyframes fever-shimmer {
+  from { filter: hue-rotate(0deg); }
+  to   { filter: hue-rotate(60deg); }
+}
+
+#hud-shards {
+  position: absolute;
+  right: 16px;
+  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 18px);
+  font-size: 15px;
+  color: var(--text);
+  opacity: 0.9;
+}
+
+/* ── 타이틀 / 결과 공용 패널 ── */
+#title-screen, #result-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 20px;
+}
+
+.crt-panel {
+  width: 100%;
+  max-width: 340px;
+  background: var(--panel);
+  border: 3px solid var(--phosphor-dim);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 3px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(74, 222, 128, 0.18),
+    inset 0 0 40px rgba(0, 0, 0, 0.5);
+  padding: 26px 22px;
+  text-align: center;
+}
+
+.game-title {
+  font-size: 52px;
+  color: var(--phosphor);
+  text-shadow: 0 0 14px rgba(74, 222, 128, 0.8), 0 0 40px rgba(74, 222, 128, 0.4);
+  letter-spacing: 2px;
+}
+
+.game-subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--amber);
+  opacity: 0.9;
+}
+
+.lore {
+  margin: 14px 0 6px;
+  font-size: 13px;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+.best-line { margin: 8px 0 2px; font-size: 14px; color: var(--amber); min-height: 1.2em; }
+
+.howto { margin-top: 12px; font-size: 12px; opacity: 0.65; line-height: 1.6; }
+
+/* ── 스킨 선택 — 줍 친구들 ── */
+.skin-picker {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 14px 0 4px;
+  flex-wrap: wrap;
+}
+
+.skin-chip {
+  width: 56px;
+  padding: 6px 4px 5px;
+  border: 2px solid var(--phosphor-dim);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.skin-chip canvas { display: block; margin: 0 auto 2px; }
+.skin-chip.selected {
+  border-color: var(--phosphor);
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+}
+.skin-chip.locked { opacity: 0.55; }
+.skin-chip .price { color: var(--amber); }
+
+/* ── 버튼: 두꺼운 베젤의 물리 버튼 느낌 ── */
+.chunky-button {
+  margin-top: 14px;
+  width: 100%;
+  padding: 14px;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: bold;
+  color: #06130a;
+  background: var(--phosphor);
+  border: 0;
+  border-radius: 12px;
+  /* 아래 그림자로 "눌리는" 물리 버튼 두께를 표현 */
+  box-shadow: 0 5px 0 #15803d, 0 0 18px rgba(74, 222, 128, 0.45);
+  cursor: pointer;
+  transition: transform 0.06s, box-shadow 0.06s;
+}
+.chunky-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #15803d;
+}
+
+.ghost-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  border: 2px solid var(--phosphor-dim);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* ── 결과 화면 ── */
+.result-title { font-size: 26px; color: var(--phosphor); letter-spacing: 4px; }
+.new-best {
+  margin-top: 8px;
+  color: var(--amber);
+  font-size: 18px;
+  animation: best-blink 0.5s step-end infinite alternate;
+}
+@keyframes best-blink { from { opacity: 1; } to { opacity: 0.35; } }
+.result-detail { font-size: 14px; line-height: 1.8; opacity: 0.9; }
+
+/* ── 구석 버튼 (음소거) ── */
+.corner-button {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 30;
+  width: 42px; height: 42px;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid var(--phosphor-dim);
+  border-radius: 10px;
+  cursor: pointer;
+}
