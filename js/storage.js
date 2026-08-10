@@ -36,6 +36,8 @@ export function loadProfile() {
     unlockedSkins: read("unlockedSkins", ["joobi"]), // 기본 줍 '주비'는 처음부터 보유
     selectedSkin: read("selectedSkin", "joobi"),
     muted: read("muted", false),
+    lastBonusDate: read("lastBonusDate", ""),        // 출석 보너스: 마지막 지급일 "YYYY-MM-DD"
+    bonusStreak: read("bonusStreak", 0),             // 연속 출석 일수
   };
 }
 
@@ -46,4 +48,6 @@ export function saveProfile(profile) {
   write("unlockedSkins", profile.unlockedSkins);
   write("selectedSkin", profile.selectedSkin);
   write("muted", profile.muted);
+  write("lastBonusDate", profile.lastBonusDate);
+  write("bonusStreak", profile.bonusStreak);
 }
