@@ -37,6 +37,7 @@ export class Joop {
     this.hoverPhase = Math.random() * Math.PI * 2;
     this.squash = 0;           // 스쿼시&스트레치 강도 (-1~1, 0으로 감쇠)
     this.shakeTimer = 0;       // 피격 셰이크 남은 시간
+    this.sleeping = false;     // 첫 화면 방치 시 잠듦 (main.js 가 관리, §10-6)
   }
 
   /** 궤도 전환 입력. 전환 "느낌"을 위해 스쿼시를 걸어준다. */
@@ -77,8 +78,8 @@ export class Joop {
     }
     if (this.blinking > 0) this.blinking -= dt;
 
-    // 호버링·스쿼시·셰이크 감쇠
-    this.hoverPhase += dt * 3;
+    // 호버링·스쿼시·셰이크 감쇠 (잘 때는 숨쉬듯 느리게)
+    this.hoverPhase += dt * (this.sleeping ? 1.2 : 3);
     this.squash *= Math.pow(0.001, dt); // 약 0.7초 만에 소멸하는 지수 감쇠
     if (this.shakeTimer > 0) this.shakeTimer -= dt;
   }
@@ -138,11 +139,12 @@ export class Joop {
     ctx.restore();
   }
 
-  /** 지금 그려야 할 눈 상태를 정한다. 우선순위: hurt > fever > happy > blink > idle */
+  /** 지금 그려야 할 눈 상태를 정한다. 우선순위: hurt > fever > happy > sleep > blink > idle */
   faceState(fever) {
     if (this.mood === "hurt") return "hurt";
     if (fever) return "fever";
     if (this.mood === "happy") return "happy";
+    if (this.sleeping) return "sleep";
     if (this.blinking > 0) return "blink";
     return "idle";
   }
@@ -282,6 +284,11 @@ function drawFace(ctx, r, accent, face, time) {
       // 별눈 — 피버의 반짝임
       starPath(ctx, ex, eyeY, eyeSize * 0.7, time * 3);
       ctx.fill();
+    } else if (face === "sleep") {
+      // 내리감은 눈 — 아래로 볼록한 곡선 (자는 반려의 보편 문법, §10-6)
+      ctx.beginPath();
+      ctx.arc(ex, eyeY - eyeSize * 0.15, eyeSize * 0.5, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
     }
   }
 

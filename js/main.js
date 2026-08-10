@@ -23,7 +23,10 @@ import {
 } from "./effects.js";
 import { shareScore } from "./share.js";
 import { claimDailyBonus } from "./daily.js";
-import { bondPoints, bondTier, greeting, petReaction, renameReaction } from "./bond.js";
+import {
+  bondPoints, bondTier, greeting, petReaction, renameReaction,
+  tierUpLine, sleepLine, wakeLine,
+} from "./bond.js";
 import * as sound from "./sound.js";
 import * as ui from "./ui.js";
 
@@ -42,6 +45,11 @@ let layout = null;
 let starfield = null;
 let elapsedTotal = 0;           // 앱 시작 후 누적 시간 (연출용 시계)
 let gameOverAt = 0;             // 게임 오버 시각 — 직후 오탭으로 인한 즉시 재시작 방지
+let titleIdleSeconds = 0;       // 첫 화면 무입력 시간 — 20초면 줍이 잠든다 (§10-6)
+let sleepZzTimer = 0;           // 다음 💤 까지 남은 시간
+let pendingTierUp = null;       // 판에서 유대 단계가 올랐으면 기지 복귀 때 축하 (§10-5)
+
+const SLEEP_AFTER_SECONDS = 20;
 
 /* ── 캔버스 크기 설정: CSS 픽셀 × devicePixelRatio (기술설계 §5) ── */
 function resize() {
@@ -69,7 +77,11 @@ function startRun() {
 function endRun() {
   // 이번 판의 조각을 지갑에 합산하고 최고기록을 갱신한다
   profile.shards += run.shardsEarned;
+  const tierBefore = bondTier(bondPoints(profile));
   profile.totalDebris += run.debrisCollected; // 유대 점수의 몸통 (§10-2)
+  const tierAfter = bondTier(bondPoints(profile));
+  // 판 도중 축하로 흐름을 끊지 않는다 — 기지에서 줍과 마주 봤을 때 (§10-5)
+  if (tierAfter.id !== tierBefore.id) pendingTierUp = tierAfter;
   run.isNewBest = run.score > profile.best;
   if (run.isNewBest) profile.best = run.score;
   saveProfile(profile);
@@ -85,11 +97,36 @@ function gotoTitle() {
   screenState = "title";
   run = createRunState();
   joop = new Joop();
+  wakeTitleJoop();
   const tier = bondTier(bondPoints(profile));
   ui.updateTitle(profile, tier.label);
   ui.renderSkinPicker(profile, onSkinClick);
-  ui.showSpeech(greeting(tier, profile.joopName !== "줍이"));
+  if (pendingTierUp) {
+    celebrateTierUp(pendingTierUp); // 판에서 유대가 올랐다 — 지금이 축하할 순간
+    pendingTierUp = null;
+  } else {
+    ui.showSpeech(greeting(tier, profile.joopName !== "줍이", profile.selectedSkin));
+  }
   ui.showScreen("title");
+}
+
+/** 유대 단계 상승 축하: 대사 + 폭죽 + 팡파레 + 바운스 (§10-5) */
+function celebrateTierUp(tier) {
+  const pose = titlePose();
+  titleJoop.setMood("happy", 2);
+  titleJoop.squash = 0.6;
+  spawnBurst(effects, pose.x, pose.y, "#35e07a", 18, 260);
+  spawnBurst(effects, pose.x, pose.y, "#ffb23e", 18, 220);
+  spawnPopup(effects, pose.x, pose.y - layout.unit * 0.2, "🎉", "#ffb23e");
+  sound.playUnlock();
+  ui.showSpeech(tierUpLine(tier));
+  ui.updateTitle(profile, tier.label);
+}
+
+/** 잠든 줍을 깨우고 방치 타이머를 리셋한다. (모든 첫 화면 상호작용이 부른다) */
+function wakeTitleJoop() {
+  titleIdleSeconds = 0;
+  titleJoop.sleeping = false;
 }
 
 /** 첫 화면 대형 줍의 위치·크기 (그리기와 쓰다듬기 판정이 공유) */
@@ -100,6 +137,9 @@ function titlePose() {
 
 /** 첫 화면에서 줍 근처를 탭하면 쓰다듬기 — 애착의 핵심 인터랙션 (§10-3) */
 function tryPet(event) {
+  const wasSleeping = titleJoop.sleeping;
+  wakeTitleJoop(); // 어떤 탭이든 잠은 깬다
+
   const rect = stage.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
@@ -107,6 +147,15 @@ function tryPet(event) {
   const reach = CONFIG.joop.radius * layout.unit * pose.scale * 2; // 판정은 넉넉하게
   if (Math.hypot(x - pose.x, y - pose.y) > reach) return;
 
+  // 자던 줍을 탭했으면 이번 탭은 "깨우기" — 쓰다듬기 카운트 없음 (§10-6, 미안하니까)
+  if (wasSleeping) {
+    titleJoop.setMood("happy", 0.8);
+    sound.playPet();
+    ui.showSpeech(wakeLine());
+    return;
+  }
+
+  const tierBefore = bondTier(bondPoints(profile));
   titleJoop.setMood("happy", 0.8);
   titleJoop.squash = 0.5; // 기분 좋은 바운스
   profile.pets += 1;
@@ -116,9 +165,13 @@ function tryPet(event) {
   spawnBurst(effects, x, y, "#ff5c77", 8, 180);
   sound.playPet();
 
-  const tier = bondTier(bondPoints(profile));
-  ui.showSpeech(petReaction(tier));
-  ui.updateTitle(profile, tier.label); // 쓰다듬다 단계가 오르면 칩도 바로 갱신
+  const tierAfter = bondTier(bondPoints(profile));
+  if (tierAfter.id !== tierBefore.id) {
+    celebrateTierUp(tierAfter); // 쓰다듬다 단계가 올랐다 — 그 자리에서 축하 (§10-5)
+    return;
+  }
+  ui.showSpeech(petReaction(tierAfter));
+  ui.updateTitle(profile, tierAfter.label);
 }
 
 /* ── 입력 ── */
@@ -152,6 +205,7 @@ async function onShare() {
 
 function onSkinClick(skinId) {
   sound.unlock();
+  wakeTitleJoop(); // 스킨을 고르는 것도 상호작용 — 잠 깨움 (§10-6)
   if (profile.unlockedSkins.includes(skinId)) {
     profile.selectedSkin = skinId; // 보유 스킨 → 바로 장착
     sound.playSwitch(true);
@@ -193,6 +247,7 @@ window.addEventListener("resize", resize);
 
 /** 이름 편집 확정: 검증 후 저장. 빈 이름·같은 이름은 조용히 무시 (§10-1) */
 function onRename(rawName) {
+  wakeTitleJoop();
   const name = rawName.trim().slice(0, 12);
   const tier = bondTier(bondPoints(profile));
   if (!name || name === profile.joopName) {
@@ -209,7 +264,10 @@ function onRename(rawName) {
 function update(dt) {
   elapsedTotal += dt;
   joop.update(dt);
-  if (screenState === "title") titleJoop.update(dt);
+  if (screenState === "title") {
+    titleJoop.update(dt);
+    updateTitleSleep(dt);
+  }
   updateEffects(effects, dt);
 
   if (screenState !== "playing") return;
@@ -225,6 +283,25 @@ function update(dt) {
   handleCollisions(joopPos);
 
   ui.updateHud(run, isFever(run));
+}
+
+/** 첫 화면 방치 감지: 20초 무입력이면 잠들고, 자는 동안 💤가 떠오른다 (§10-6) */
+function updateTitleSleep(dt) {
+  titleIdleSeconds += dt;
+  if (!titleJoop.sleeping && titleIdleSeconds >= SLEEP_AFTER_SECONDS) {
+    titleJoop.sleeping = true;
+    ui.showSpeech(sleepLine());
+    sleepZzTimer = 0;
+  }
+  if (titleJoop.sleeping) {
+    sleepZzTimer -= dt;
+    if (sleepZzTimer <= 0) {
+      sleepZzTimer = 2.5;
+      const pose = titlePose();
+      spawnPopup(effects,
+        pose.x + layout.unit * 0.18, pose.y - layout.unit * 0.2, "💤", "#8a9e92");
+    }
+  }
 }
 
 /** 피버 게이지 감쇠·타이머 진행 (게임디자인 §4) */
