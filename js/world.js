@@ -59,12 +59,13 @@ export function createStarfield(width, height) {
 }
 
 /**
- * 배경 전체를 그린다: 별 → 궤도 링 → 지구.
+ * 배경 전체를 그린다: 별 → (배경 위상) → 궤도 링 → 지구.
  *
- * @param {number} time      누적 시간(초) — 지구 자전·반짝임 연출용
- * @param {boolean} fever    피버 중이면 배경을 화려하게
+ * @param {number} time        누적 시간(초) — 지구 자전·반짝임 연출용
+ * @param {boolean} fever      피버 중이면 배경을 화려하게
+ * @param {number} runElapsed  이번 판 경과 시간(초) — 배경 위상의 입력. 메뉴에서는 0
  */
-export function drawWorld(ctx, layout, starfield, time, fever) {
+export function drawWorld(ctx, layout, starfield, time, fever, runElapsed = 0) {
   const { width, height } = layout;
 
   // 1) 우주 배경 — 피버 중에는 살짝 보라빛 그라데이션
@@ -78,6 +79,10 @@ export function drawWorld(ctx, layout, starfield, time, fever) {
   }
   ctx.fillRect(0, 0, width, height);
   ctx.drawImage(starfield, 0, 0);
+
+  // 1.5) 배경 위상: 오래 버틸수록 하늘이 변한다 (게임디자인 §9-3).
+  //      피버 연출이 더 강하므로 피버 중에는 쉰다 (이슈 #17 우선순위).
+  if (!fever) drawBackdropPhases(ctx, layout, runElapsed);
 
   // 2) 궤도 링 — 점선 원. 줍이 다니는 길이 항상 보이게
   for (const radius of layout.laneRadius) {
@@ -140,4 +145,31 @@ export function drawWorld(ctx, layout, starfield, time, fever) {
     ctx.stroke();
   }
   ctx.restore();
+}
+
+/**
+ * 배경 위상 오버레이. 각 위상은 start 이후 fadeSeconds 에 걸쳐 나타나고,
+ * 다음 위상이 나타나는 만큼 물러난다 — 급격한 색 변화 없이 하늘이 흐른다.
+ */
+function drawBackdropPhases(ctx, layout, runElapsed) {
+  const { phases, fadeSeconds } = CONFIG.backdrop;
+  const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+  for (let i = 0; i < phases.length; i++) {
+    let alpha = clamp01((runElapsed - phases[i].start) / fadeSeconds);
+    if (i + 1 < phases.length) {
+      // 다음 위상이 등장한 만큼 이번 위상은 자리를 내준다
+      alpha *= 1 - clamp01((runElapsed - phases[i + 1].start) / fadeSeconds);
+    }
+    if (alpha <= 0) continue;
+
+    const grad = ctx.createLinearGradient(0, 0, 0, layout.height);
+    grad.addColorStop(0, phases[i].top);
+    grad.addColorStop(0.55, "rgba(0, 0, 0, 0)"); // 화면 중앙(플레이 영역)은 맑게 유지
+    grad.addColorStop(1, phases[i].bottom);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, layout.width, layout.height);
+    ctx.globalAlpha = 1;
+  }
 }
