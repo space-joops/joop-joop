@@ -79,6 +79,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  padding-right: 56px; /* 우상단 음소거 버튼과 하트가 겹치지 않게 */
 }
 
 /* 세븐세그먼트 계기판 느낌의 점수 표시 */

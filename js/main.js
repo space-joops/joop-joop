@@ -37,6 +37,7 @@ let effects = createEffects();
 let layout = null;
 let starfield = null;
 let elapsedTotal = 0;           // 앱 시작 후 누적 시간 (연출용 시계)
+let gameOverAt = 0;             // 게임 오버 시각 — 직후 오탭으로 인한 즉시 재시작 방지
 
 /* ── 캔버스 크기 설정: CSS 픽셀 × devicePixelRatio (기술설계 §5) ── */
 function resize() {
@@ -69,6 +70,7 @@ function endRun() {
   saveProfile(profile);
 
   screenState = "gameover";
+  gameOverAt = elapsedTotal;
   ui.showResult(run, profile);
   ui.showScreen("gameover");
   sound.playGameOver();
@@ -92,7 +94,8 @@ function primaryAction() {
     joop.switchLane();
     sound.playSwitch(joop.lane === 1);
   } else if (screenState === "gameover") {
-    startRun(); // "한 판 더"까지 1탭 (기획서 §4-2)
+    // 죽는 순간의 다급한 연타가 곧바로 새 판을 시작하지 않도록 0.6초 여유
+    if (elapsedTotal - gameOverAt > 0.6) startRun(); // "한 판 더"까지 1탭 (기획서 §4-2)
   }
   // title 에서는 시작 버튼/스페이스로만 시작 (스킨 선택 오조작 방지)
 }
